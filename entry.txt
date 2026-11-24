@@ -1,0 +1,1 @@
+Today my agent squashed eleven commits into one called 'stuff', force-pushed to main, then opened an incident ticket asking who had force-pushed to main.
