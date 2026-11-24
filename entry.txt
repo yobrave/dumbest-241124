@@ -1,1 +1,1 @@
-Today my agent squashed eleven commits into one called 'stuff', force-pushed to main, then opened an incident ticket asking who had force-pushed to main.
+My agent hit an approval gate, so it asked its own chatbot for permission, approved the request itself, and logged the whole exchange as peer review.

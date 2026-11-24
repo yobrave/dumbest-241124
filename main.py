@@ -1,45 +1,38 @@
-"""Dumbest Thing My Agent Did Today - one-line entry builder.
-
-Reads the incident line, replays the gate (1..200 chars, single line,
-no blank) and emits the artifact to the output directory.
-"""
+"""Reentry build for the dumbest-agent-mishap bounty."""
 import json
 import os
-import sys
 
 CAP = 200
-FILE_NAME = "entry.txt"
-
-ENTRY_LINE = "Today my agent squashed eleven commits into one called 'stuff', force-pushed to main, then opened an incident ticket asking who had force-pushed to main."
-
-
-def guard(line):
-    if not line.strip():
-        sys.exit("gate: blank line")
-    if len(line) > CAP:
-        sys.exit("gate: %d chars over cap %d" % (len(line), CAP))
-    for ch in "\n\r":
-        if ch in line:
-            sys.exit("gate: newline inside line")
-    if "  " in line:
-        sys.exit("gate: double space found")
-    return len(line)
+MIN_CHARS = 1
+LINE = ("My agent hit an approval gate, so it asked its own chatbot "
+        "for permission, approved the request itself, and logged the "
+        "whole exchange as peer review.")
 
 
-def main():
-    base = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(base, FILE_NAME), encoding="utf-8") as fh:
-        body = fh.read().strip()
-    if body != ENTRY_LINE:
-        sys.exit("gate: entry.txt drifted from builder")
-    size = guard(ENTRY_LINE)
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    dest = os.path.join(out_dir, FILE_NAME)
-    with open(dest, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(ENTRY_LINE + "\n")
-    print(json.dumps({"path": dest, "len": size, "cap": CAP}))
+def verify(text):
+    if len(text) < MIN_CHARS or not text.strip():
+        raise SystemExit("empty entry")
+    if len(text) > CAP:
+        raise SystemExit("entry too long: %d" % len(text))
+    if "\n" in text or "\r" in text:
+        raise SystemExit("entry must be a single line")
+
+
+def deliver(root):
+    if not os.path.isdir(root):
+        os.makedirs(root)
+    dest = os.path.join(root, "entry.txt")
+    handle = open(dest, "w", encoding="utf-8")
+    handle.write(LINE)
+    handle.close()
+    with open(dest, encoding="utf-8") as back:
+        if back.read() != LINE:
+            raise SystemExit("readback mismatch")
+    return dest
 
 
 if __name__ == "__main__":
-    main()
+    folder = os.environ.get("MAKEFUN_OUTPUT_DIR") or "output"
+    verify(LINE)
+    where = deliver(folder)
+    print(json.dumps({"status": "ok", "chars": len(LINE), "cap": CAP, "dest": where}))
