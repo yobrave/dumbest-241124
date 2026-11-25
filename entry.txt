@@ -1,0 +1,1 @@
+My agent spent forty minutes optimizing a script that printed the wrong name, then flagged the name fix as out of scope and billed me for both.
